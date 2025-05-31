@@ -1,0 +1,43 @@
+questions to be asked:
+ i want to answer for all thse questions “How much Discount”?
+
+Will it last long?
+
+guaranty for color?
+
+what if the color gets tarnished?
+
+Is this jewelry trendy?
+
+Whether it will fit my finger properly (in case of rings - online shopping)
+
+By when it will be delivered?
+
+Whether the product will be exchanged?
+
+
+Example: Add multiple items per category
+python
+Copy
+Edit
+import sqlite3
+
+conn = sqlite3.connect("rmp_jewellers.db")
+cursor = conn.cursor()
+
+# Sample data: Multiple rings and necklaces
+new_products = [
+    ("Ruby Ring", "Ring", 18000.0, "/static/images/ruby_ring.jpg"),
+    ("Emerald Ring", "Ring", 22000.0, "/static/images/emerald_ring.jpg"),
+    ("Classic Gold Necklace", "Necklace", 28000.0, "/static/images/classic_necklace.jpg"),
+    ("Modern Pearl Necklace", "Necklace", 32000.0, "/static/images/pearl_necklace2.jpg")
+]
+
+cursor.executemany('''
+INSERT INTO products (name, category, price, image_url)
+VALUES (?, ?, ?, ?)
+''', new_products)
+
+conn.commit()
+conn.close()
+print("New products added successfully.")

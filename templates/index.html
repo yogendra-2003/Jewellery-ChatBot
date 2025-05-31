@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RMP Jewellers Chatbot</title>
+<style>
+  /* Reset */
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f3e8ff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    color: #3e1a6a;
+  }
+
+  h1 {
+    text-align: center;
+    margin: 1rem 0;
+    font-weight: 700;
+    color: #6a2c91;
+    text-shadow: 1px 1px 3px #c9a1ff;
+  }
+
+  #chat-container {
+    flex: 1;
+    max-width: 720px;
+    width: 90%;
+    background: white;
+    margin: 0 auto 1rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(106, 44, 145, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #chat-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    border-bottom: 2px solid #d4baff;
+  }
+
+  .message {
+    margin-bottom: 15px;
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 20px;
+    line-height: 1.4;
+    box-shadow: 0 2px 6px rgba(106, 44, 145, 0.15);
+  }
+
+  .user {
+    background: #a66fff;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 0;
+  }
+
+  .bot {
+    background: #d8b9ff;
+    color: #3e1a6a;
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+    white-space: pre-wrap; /* keep line breaks */
+  }
+
+  #message-input {
+    display: flex;
+    padding: 15px 20px;
+    background: #6a2c91;
+    border-radius: 0 0 20px 20px;
+  }
+
+  #user-input {
+    flex: 1;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 30px;
+    outline: none;
+    box-shadow: inset 0 0 8px #b18aff;
+  }
+
+  #user-input::placeholder {
+    color: #d9baff;
+  }
+
+  button {
+    background: #9b51e0;
+    border: none;
+    color: white;
+    padding: 12px 25px;
+    margin-left: 12px;
+    font-size: 16px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 3px 8px #7a32c0;
+    transition: background 0.3s ease;
+  }
+
+  button:hover {
+    background: #b16bf9;
+  }
+
+  /* Scrollbar */
+  #chat-box::-webkit-scrollbar {
+    width: 8px;
+  }
+  #chat-box::-webkit-scrollbar-thumb {
+    background: #9b51e0;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>RMP Jewellers Chatbot</h1>
+
+<div id="chat-container">
+  <div id="chat-box"></div>
+
+  <div id="message-input">
+    <input
+      type="text"
+      id="user-input"
+      placeholder="Ask something like 'Show rings under 20000'"
+      autocomplete="off"
+    />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+  const chatBox = document.getElementById("chat-box");
+  const userInput = document.getElementById("user-input");
+
+  function sendMessage() {
+    const message = userInput.value.trim();
+    if (!message) return;
+
+    // Add user message to chat
+    const userMessage = document.createElement("div");
+    userMessage.className = "message user";
+    userMessage.textContent = "You: " + message;
+    chatBox.appendChild(userMessage);
+
+    // Scroll to bottom
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Send message to backend
+    fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: message }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // Add bot reply to chat
+        const botMessage = document.createElement("div");
+        botMessage.className = "message bot";
+        botMessage.innerHTML = "Bot: <br>" + data.reply.replace(/\n/g, "<br>");
+        chatBox.appendChild(botMessage);
+
+        // Scroll to bottom
+        chatBox.scrollTop = chatBox.scrollHeight;
+      })
+      .catch(() => {
+        const errorMsg = document.createElement("div");
+        errorMsg.className = "message bot";
+        errorMsg.textContent = "Bot: Sorry, there was an error processing your request.";
+        chatBox.appendChild(errorMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+
+    // Clear input box
+    userInput.value = "";
+    userInput.focus();
+  }
+
+  // Allow sending message on Enter key
+  userInput.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  });
+</script>
+
+</body>
+</html>
